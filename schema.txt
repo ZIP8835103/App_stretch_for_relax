@@ -1,0 +1,37 @@
+-- App stretch for Relax : รันใน Supabase > SQL Editor
+create table public.profiles(
+  id uuid primary key references auth.users on delete cascade,
+  email text not null, full_name text not null,
+  role text not null default 'user' check (role in ('user','admin')),
+  created_at timestamptz default now());
+create table public.activity_logs(
+  id bigint generated always as identity primary key,
+  user_id uuid not null references public.profiles on delete cascade,
+  started_at timestamptz not null, duration_sec int not null,
+  poses_done int not null default 12, video_path text,
+  created_at timestamptz default now());
+alter table public.profiles enable row level security;
+alter table public.activity_logs enable row level security;
+
+create function public.is_admin() returns boolean language sql security definer set search_path=public as
+$$ select exists(select 1 from profiles where id=auth.uid() and role='admin') $$;
+
+-- บังคับอีเมล @snc.ac.th ที่ระดับฐานข้อมูล + สร้างโปรไฟล์อัตโนมัติ
+create function public.handle_new_user() returns trigger language plpgsql security definer set search_path=public as $$
+begin
+  if lower(new.email) not like '%@snc.ac.th' then raise exception 'อนุญาตเฉพาะอีเมล @snc.ac.th'; end if;
+  insert into profiles(id,email,full_name) values(new.id,new.email,coalesce(new.raw_user_meta_data->>'full_name',''));
+  return new; end $$;
+create trigger on_auth_user_created before insert on auth.users for each row execute function public.handle_new_user();
+
+create policy "own profile" on profiles for select using (id=auth.uid() or is_admin());
+create policy "own logs read" on activity_logs for select using (user_id=auth.uid() or is_admin());
+create policy "own logs insert" on activity_logs for insert with check (user_id=auth.uid());
+
+-- Storage: bucket ส่วนตัว ผู้ใช้อัปโหลดได้อย่างเดียว เฉพาะ Admin ดูได้
+insert into storage.buckets(id,name,public) values('videos','videos',false);
+create policy "user upload own" on storage.objects for insert to authenticated
+  with check (bucket_id='videos' and (storage.foldername(name))[1]=auth.uid()::text);
+create policy "admin view" on storage.objects for select to authenticated
+  using (bucket_id='videos' and public.is_admin());
+-- ตั้ง Admin: update profiles set role='admin' where email='ครู@snc.ac.th';

@@ -1,0 +1,133 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>App stretch for Relax</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;600;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<style>
+:root{--bg:#eef3f0;--ink:#1d2b2a;--ac:#5b3f8c;--gold:#e0a526;--card:#fff;--mut:#5d6b69}
+*{box-sizing:border-box}body{margin:0;font:16px/1.65 'Noto Sans Thai',system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+main{max-width:640px;margin:0 auto;padding:16px 16px 80px}h1{font-size:1.7rem;margin:.2em 0;font-weight:800;color:var(--ac)}h2{font-size:1.2rem;margin:1em 0 .4em}
+.card{background:var(--card);border-radius:14px;padding:16px;margin:12px 0;border-left:5px solid var(--gold)}
+button,.btn{font:inherit;font-weight:600;border:0;border-radius:10px;padding:12px 18px;background:var(--ac);color:#fff;cursor:pointer;width:100%;margin:6px 0;display:block;text-align:center;text-decoration:none}
+button.alt{background:#fff;color:var(--ac);border:2px solid var(--ac)}button:focus-visible,input:focus-visible{outline:3px solid var(--gold)}
+input{font:inherit;width:100%;padding:12px;border:1px solid #b9c5c2;border-radius:10px;margin:4px 0 10px}
+img{max-width:100%;border-radius:10px}.mut{color:var(--mut);font-size:.9rem}.err{color:#b3261e;font-weight:600}
+.bar{height:12px;background:#dde5e2;border-radius:8px;overflow:hidden}.bar i{display:block;height:100%;background:var(--ac)}
+video{width:100%;border-radius:10px;background:#000}.top{display:flex;justify-content:space-between;align-items:center}.top button{width:auto;padding:6px 12px}
+label.o{display:block;padding:8px 0;border-bottom:1px solid #eef}
+</style></head><body><main id="app"></main>
+<script>
+const SUPABASE_URL='https://YOUR-PROJECT.supabase.co',SUPABASE_ANON_KEY='YOUR-ANON-KEY';
+const DOMAIN='@snc.ac.th',HOLD_SEC=20,GOAL=5,DAYS=3;
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+const POSES=[
+['ท่าผางประมะ','ท่าฟ้อนผาง','คอ บ่า และกล้ามเนื้อข้างลำตัวซ้าย-ขวา'],
+['ท่าล้างไหม','ท่าฟ้อนสาวไหม','คอ ไหล่ลงมาที่บ่า รักแร้ แขน ข้อมือ และลำตัว'],
+['ท่าผางไขอก','ท่าฟ้อนผาง','หน้าอก รักแร้ แขน และข้อมือทั้ง 2 ข้าง'],
+['ท่าเกี้ยวเกล้า','ท่าฟ้อนดาบ','ช่วงลำตัว หน้าอก รักแร้ แขน และข้อมือทั้ง 2 ข้าง'],
+['ท่าคลายปมไหม','ท่าฟ้อนสาวไหม','หัวไหล่ลงมาที่รักแร้ แขน ข้อมือ รวมถึงหน้าอกและหลัง'],
+['ท่าไหว้','ท่าฟ้อนบูชา','คอ หัวไหล่ และรักแร้ทั้ง 2 ข้าง'],
+['ท่าแง้น','ท่าฟ้อนแง้น','หน้าอก รักแร้ แขน ข้อมือ และกล้ามเนื้อด้านหน้า-หลังลำตัว'],
+['ท่าผางสาวหลวง','ท่าฟ้อนเจิง','คอ บ่า สะบัก หัวไหล่ด้านหลัง และกล้ามเนื้อข้างลำตัว'],
+['ท่าออกวงเกวียน','ท่าฟ้อนผาง','คอ หัวไหล่ รักแร้ แขน ข้อมือ และด้านข้างลำตัว'],
+['ท่าวาดมือ','ท่าฟ้อนขันดอก','หัวไหล่ รักแร้ แขน ข้อมือ และหน้าอก'],
+['ท่าวาดมือไปด้านหลัง','ท่าตบมะผาบ','หน้าอก หัวไหล่ด้านหน้า และแขนทั้ง 2 ข้าง'],
+['ท่าสือลากหาง','ท่ารำฟ้อนดาบ','คอ บ่า หัวไหล่ แขน ลำตัวด้านข้าง กล้ามเนื้ออก และหน้าแข้ง']];
+const $=s=>document.querySelector(s),app=$('#app');
+let user=null,profile=null,rec=null,stream=null,chunks=[];
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shell=(h,back)=>app.innerHTML=`<div class="top"><div>${back?'<button class="alt" onclick="home()">‹ กลับ</button>':''}</div>${user?'<button class="alt" onclick="logout()">ออกจากระบบ</button>':''}</div>${h}`;
+
+// ---------- Auth ----------
+function authView(mode='login',msg=''){shell(`<h1>App stretch for Relax</h1><p class="mut">ยืดเหยียดคลายปวดคอด้วยท่าฟ้อนล้านนาประยุกต์</p>
+<div class="card"><h2>${mode=='login'?'เข้าสู่ระบบ':'ลงทะเบียน'}</h2>
+${mode=='reg'?'<input id="nm" placeholder="ชื่อ-นามสกุล" autocomplete="name">':''}
+<input id="em" type="email" placeholder="อีเมล ${DOMAIN}" autocomplete="email">
+<input id="pw" type="password" placeholder="รหัสผ่าน (อย่างน้อย 6 ตัว)" autocomplete="${mode=='login'?'current-password':'new-password'}">
+<p class="err" id="msg">${msg}</p><button onclick="${mode=='login'?'login()':'register()'}">${mode=='login'?'เข้าสู่ระบบ':'ลงทะเบียน'}</button>
+<button class="alt" onclick="authView('${mode=='login'?'reg':'login'}')">${mode=='login'?'ยังไม่มีบัญชี? ลงทะเบียน':'มีบัญชีแล้ว? เข้าสู่ระบบ'}</button></div>`)}
+const okMail=e=>e.trim().toLowerCase().endsWith(DOMAIN)&&/^[^@\s]+@snc\.ac\.th$/i.test(e.trim());
+async function register(){const e=$('#em').value.trim(),n=$('#nm').value.trim(),p=$('#pw').value;
+ if(!n)return $('#msg').textContent='กรอกชื่อ-นามสกุล';if(!okMail(e))return $('#msg').textContent='ใช้ได้เฉพาะอีเมล '+DOMAIN;
+ const{error}=await sb.auth.signUp({email:e,password:p,options:{data:{full_name:n}}});
+ if(error)return $('#msg').textContent=error.message;boot()}
+async function login(){const e=$('#em').value.trim();if(!okMail(e))return $('#msg').textContent='ใช้ได้เฉพาะอีเมล '+DOMAIN;
+ const{error}=await sb.auth.signInWithPassword({email:e,password:$('#pw').value});if(error)return $('#msg').textContent='อีเมลหรือรหัสผ่านไม่ถูกต้อง';boot()}
+async function logout(){await sb.auth.signOut();user=profile=null;authView()}
+async function boot(){const{data}=await sb.auth.getSession();user=data.session?.user||null;
+ if(!user)return authView();
+ const r=await sb.from('profiles').select('*').eq('id',user.id).single();profile=r.data;home()}
+
+// ---------- Home ----------
+async function home(){stopCam();
+ const since=new Date(Date.now()-DAYS*864e5).toISOString();
+ const{count}=await sb.from('activity_logs').select('*',{count:'exact',head:true}).eq('user_id',user.id).gte('started_at',since);
+ const c=count||0;
+ shell(`<h1>สวัสดี ${esc(profile?.full_name||'')}</h1>
+<div class="card"><b>เป้าหมาย: ${GOAL} ครั้งใน ${DAYS} วัน</b><div class="bar"><i style="width:${Math.min(100,c/GOAL*100)}%"></i></div><span class="mut">ทำแล้ว ${c}/${GOAL} ครั้ง (นับย้อนหลัง ${DAYS} วัน)</span></div>
+<button onclick="page('cause')">1. สาเหตุของอาการปวดคอ</button><button onclick="page('tools')">2. แบบประเมิน NDI และ NRS</button>
+<button onclick="page('physio')">3. คำแนะนำทางกายภาพบำบัด</button><button onclick="activity()">4. มาคลายปวดเมื่อยคอกันเถอะ</button>
+${profile?.role=='admin'?'<button class="alt" onclick="admin()">Admin: ดูวิดีโอผู้ใช้</button>':''}`)}
+
+const PAGES={
+cause:`<h1>สาเหตุของอาการปวดคอ</h1>
+<div class="card"><h2>กายวิภาคศาสตร์</h2><p>กระดูกสันหลังคอ 7 ชิ้น (C1–C7) รองรับศีรษะที่หนักราว 4.5–5 กก. มีหมอนรองกระดูก ข้อต่อ เอ็นยึด และกล้ามเนื้อหลายชั้น เช่น upper trapezius, levator scapulae, sternocleidomastoid และกลุ่ม deep neck flexors ที่ช่วยพยุงคอ</p></div>
+<div class="card"><h2>สรีรวิทยา</h2><p>การก้มคอใช้โทรศัพท์หรือนั่งท่าเดิมนาน ทำให้กล้ามเนื้อด้านหลังคอและบ่าต้องหดเกร็งต้านแรงโน้มถ่วงต่อเนื่อง เลือดไหลเวียนลดลง เกิดความล้า จุดกดเจ็บ และเอ็นหรือข้อต่อถูกยืดค้าง จนปวดเมื่อย</p></div>
+<div class="card"><h2>แรงที่คอเพิ่มขึ้นตามองศาก้ม</h2>
+<svg viewBox="0 0 300 150" width="100%" role="img" aria-label="แรงที่คอตามองศาก้ม"><g fill="#5b3f8c">
+<rect x="20" y="115" width="40" height="20" rx="3"/><rect x="85" y="95" width="40" height="40" rx="3"/><rect x="150" y="75" width="40" height="60" rx="3"/><rect x="215" y="45" width="40" height="90" rx="3"/></g>
+<g font-size="11" text-anchor="middle" fill="#1d2b2a"><text x="40" y="110">12 กก.</text><text x="105" y="90">18 กก.</text><text x="170" y="70">22 กก.</text><text x="235" y="40">27 กก.</text>
+<text x="40" y="148">15°</text><text x="105" y="148">30°</text><text x="170" y="148">45°</text><text x="235" y="148">60°</text></g></svg>
+<p class="mut">ค่าประมาณจากแบบจำลองของ Hansraj (2014)</p></div>
+<div class="card"><h2>แหล่งอ้างอิง</h2><ol class="mut"><li>Bogduk N, McGuirk B. Medical Management of Acute and Chronic Neck Pain. Elsevier; 2006.</li>
+<li>Bogduk N. The anatomy and pathophysiology of neck pain. Phys Med Rehabil Clin N Am. 2011;22(3):367-82.</li>
+<li>Hansraj KK. Assessment of stresses in the cervical spine caused by posture and position of the head. Surg Technol Int. 2014;25:277-9.</li></ol></div>`,
+tools:`<h1>แบบประเมิน NDI และ NRS</h1>
+<div class="card"><h2>NDI (Neck Disability Index)</h2><p>แบบสอบถาม 10 ข้อ (ความปวด การดูแลตนเอง การยก การอ่าน ปวดศีรษะ สมาธิ การทำงาน การขับรถ การนอน การพักผ่อน) ข้อละ 0–5 คะแนน รวม 50 คะแนน (คูณ 2 เป็นร้อยละ)</p>
+<p>แปลผล: 0–4 ไม่มีความพิการ · 5–14 เล็กน้อย · 15–24 ปานกลาง · 25–34 รุนแรง · &gt;34 รุนแรงมากที่สุด (คะแนนดิบ)</p></div>
+<div class="card"><h2>NRS (Numeric Rating Scale)</h2><p>ให้ผู้ใช้ให้คะแนนความปวดปัจจุบันจาก 0 (ไม่ปวด) ถึง 10 (ปวดมากที่สุด) &nbsp; 1–3 ปวดน้อย · 4–6 ปานกลาง · 7–10 มาก</p></div>
+<div class="card"><h2>แหล่งอ้างอิง</h2><ol class="mut"><li>Vernon H, Mior S. The Neck Disability Index: a study of reliability and validity. J Manipulative Physiol Ther. 1991;14(7):409-15.</li>
+<li>Cleland JA, Childs JD, Whitman JM. Psychometric properties of the Neck Disability Index and Numeric Pain Rating Scale in patients with mechanical neck pain. Arch Phys Med Rehabil. 2008;89(1):69-74.</li></ol></div>`,
+physio:`<h1>คำแนะนำทางกายภาพบำบัด</h1>
+<div class="card"><ul><li>ยืดเหยียดและออกกำลังกายกล้ามเนื้อคอ-บ่า-สะบักเป็นประจำ มีหลักฐานว่าลดปวดคอเรื้อรังได้</li><li>ปรับท่าทาง: ยกหน้าจอให้อยู่ระดับสายตา หลีกเลี่ยงการก้มคอนาน</li><li>ลุกขยับทุก 30–60 นาที</li><li>ประคบอุ่นบริเวณคอ-บ่าที่เกร็ง</li><li>หยุดและพบแพทย์หากชา อ่อนแรง ปวดร้าวลงแขน ปวดรุนแรงหลังอุบัติเหตุ หรือปวดนานเกิน 2–4 สัปดาห์</li></ul></div>
+<div class="card"><h2>งานวิจัยรองรับ</h2><ol class="mut"><li>Blanpied PR, et al. Neck Pain: Revision 2017. J Orthop Sports Phys Ther. 2017;47(7):A1-A83.</li>
+<li>Gross A, et al. Exercises for mechanical neck disorders. Cochrane Database Syst Rev. 2015;(1):CD004250.</li></ol></div>
+<p class="mut">ข้อมูลนี้เพื่อการศึกษา ไม่ใช่การวินิจฉัยโรค</p>`};
+function page(k){shell(PAGES[k],1)}
+
+// ---------- Activity ----------
+function activity(){shell(`<h1>กิจกรรมคลายปวดคอ 12 ท่า</h1><p class="mut">ระบบจะบันทึกวิดีโอระหว่างทำกิจกรรม เฉพาะผู้ดูแลระบบเท่านั้นที่ดูได้</p>
+${POSES.map((p,i)=>`<div class="card"><b>ท่าที่ ${i+1} ${p[0]}</b><br><span class="mut">ประยุกต์จาก${p[1]}</span><br>ช่วยยืดกล้ามเนื้อ${p[2]}</div>`).join('')}
+<button onclick="startAct()">เริ่มทำกิจกรรม</button>`,1)}
+const stopCam=()=>{try{rec&&rec.state!='inactive'&&rec.stop()}catch(e){}stream?.getTracks().forEach(t=>t.stop());stream=rec=null};
+async function startAct(){
+ try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false})}
+ catch(e){return alert('เปิดกล้องไม่ได้ กรุณาอนุญาตการใช้กล้องแล้วลองใหม่')}
+ const mt=['video/webm;codecs=vp8','video/webm','video/mp4'].find(t=>window.MediaRecorder&&MediaRecorder.isTypeSupported(t))||'';
+ chunks=[];rec=new MediaRecorder(stream,mt?{mimeType:mt,videoBitsPerSecond:600000}:{});rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);rec.start(1000);
+ const t0=Date.now();step(0,t0,rec.mimeType||mt||'video/webm')}
+let tm;
+function step(i,t0,mime){clearInterval(tm);
+ if(i>=POSES.length)return finish(t0,mime);const p=POSES[i];let s=HOLD_SEC;
+ shell(`<h2>ท่าที่ ${i+1}/12: ${p[0]}</h2><video id="cam" autoplay muted playsinline></video>
+<img src="img/p${i+1}.jpg" alt="ท่า${p[0]}"><div class="card">ประยุกต์จาก${p[1]}<br>ช่วยยืดกล้ามเนื้อ${p[2]}<br><span class="mut">ค้างท่าแต่ละข้าง ${HOLD_SEC} วินาที อย่าฝืนจนเจ็บ</span></div>
+<div class="bar"><i id="pb" style="width:0"></i></div><p id="cd" class="mut">เหลือ ${s} วินาที</p><button onclick="step(${i+1},${t0},'${mime}')">${i<11?'ท่าถัดไป':'เสร็จสิ้น'}</button>`);
+ $('#cam').srcObject=stream;
+ tm=setInterval(()=>{s--;$('#cd').textContent=s>0?`เหลือ ${s} วินาที`:'ครบเวลาแล้ว เลือกท่าถัดไปได้';$('#pb').style.width=(HOLD_SEC-s)/HOLD_SEC*100+'%';if(s<=0)clearInterval(tm)},1000)}
+async function finish(t0,mime){clearInterval(tm);shell('<h2>กำลังบันทึกข้อมูล...</h2><p class="mut">อย่าปิดหน้านี้</p>');
+ await new Promise(r=>{rec.onstop=r;rec.stop()});stream.getTracks().forEach(t=>t.stop());
+ const ext=mime.includes('mp4')?'mp4':'webm',path=`${user.id}/${Date.now()}.${ext}`;
+ const up=await sb.storage.from('videos').upload(path,new Blob(chunks,{type:mime}),{contentType:mime});
+ const ins=await sb.from('activity_logs').insert({user_id:user.id,started_at:new Date(t0).toISOString(),duration_sec:Math.round((Date.now()-t0)/1000),video_path:up.error?null:path});
+ if(up.error||ins.error)return shell(`<p class="err">บันทึกไม่สำเร็จ: ${esc((up.error||ins.error).message)}</p><button onclick="home()">กลับหน้าหลัก</button>`);
+ shell('<h1>เยี่ยมมาก! 🎉</h1><div class="card">บันทึกการทำกิจกรรมเรียบร้อยแล้ว</div><button onclick="home()">กลับหน้าหลัก</button>')}
+
+// ---------- Admin ----------
+async function admin(){shell('<p>กำลังโหลด...</p>',1);
+ const{data,error}=await sb.from('activity_logs').select('*,profiles(full_name,email)').not('video_path','is',null).order('started_at',{ascending:false}).limit(30);
+ if(error)return shell(`<p class="err">${esc(error.message)}</p>`,1);
+ const urls=await Promise.all(data.map(r=>sb.storage.from('videos').createSignedUrl(r.video_path,3600)));
+ shell(`<h1>วิดีโอผู้ใช้</h1>${data.map((r,i)=>`<div class="card"><b>${esc(r.profiles?.full_name||'')}</b> <span class="mut">${esc(r.profiles?.email||'')}</span><br><span class="mut">${new Date(r.started_at).toLocaleString('th-TH')} · ${Math.round(r.duration_sec/60)} นาที</span>
+ <video controls preload="none" src="${urls[i].data?.signedUrl||''}"></video></div>`).join('')||'<p>ยังไม่มีวิดีโอ</p>'}`,1)}
+
+sb.auth.onAuthStateChange(()=>{});boot();
+</script></body></html>
