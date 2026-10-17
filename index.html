@@ -37,22 +37,24 @@ button.chip.on{background:var(--deep);color:#fff;border-color:var(--deep)}
 .stat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;text-align:center}.stat div{background:var(--mint2);border-radius:16px;padding:10px 4px}.stat b{display:block;font-size:24px}
 </style></head><body><main id="app"></main>
 <script>
-const SUPABASE_URL='https://fsijtvltwrxahbgnqpjo.supabase.co',SUPABASE_ANON_KEY='sb_publishable_lt5OhudLmXF0wkH98HE83Q_2riJz1kd';
+const SUPABASE_URL='https://YOUR-PROJECT.supabase.co',SUPABASE_ANON_KEY='YOUR-ANON-KEY';
 const DOMAIN='@snc.ac.th',HOLD_SEC=20,REST_SEC=10,GOAL=5,DAYS=3;
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 const POSES=[
-['ท่าผางปรมะ','ท่าฟ้อนผาง','คอ บ่า และกล้ามเนื้อข้างลำตัวซ้าย-ขวา'],
+['ท่าผางประมะ','ท่าฟ้อนผาง','คอ บ่า และกล้ามเนื้อข้างลำตัวซ้าย-ขวา'],
 ['ท่าล้างไหม','ท่าฟ้อนสาวไหม','คอ ไหล่ลงมาที่บ่า รักแร้ แขน ข้อมือ และลำตัว'],
 ['ท่าผางไขอก','ท่าฟ้อนผาง','หน้าอก รักแร้ แขน และข้อมือทั้ง 2 ข้าง'],
 ['ท่าเกี้ยวเกล้า','ท่าฟ้อนดาบ','ช่วงลำตัว หน้าอก รักแร้ แขน และข้อมือทั้ง 2 ข้าง'],
 ['ท่าคลายปมไหม','ท่าฟ้อนสาวไหม','หัวไหล่ลงมาที่รักแร้ แขน ข้อมือ รวมถึงหน้าอกและหลัง'],
 ['ท่าไหว้','ท่าฟ้อนบูชา','คอ หัวไหล่ และรักแร้ทั้ง 2 ข้าง'],
 ['ท่าแง้น','ท่าฟ้อนแง้น','หน้าอก รักแร้ แขน ข้อมือ และกล้ามเนื้อด้านหน้า-หลังลำตัว'],
-['ท่าผางสางหลวง','ท่าฟ้อนเจิง','คอ บ่า สะบัก หัวไหล่ด้านหลัง และกล้ามเนื้อข้างลำตัว'],
+['ท่าผางสาวหลวง','ท่าฟ้อนเจิง','คอ บ่า สะบัก หัวไหล่ด้านหลัง และกล้ามเนื้อข้างลำตัว'],
 ['ท่าออกวงเกวียน','ท่าฟ้อนผาง','คอ หัวไหล่ รักแร้ แขน ข้อมือ และด้านข้างลำตัว'],
 ['ท่าวาดมือ','ท่าฟ้อนขันดอก','หัวไหล่ รักแร้ แขน ข้อมือ และหน้าอก'],
 ['ท่าวาดมือไปด้านหลัง','ท่าตบมะผาบ','หน้าอก หัวไหล่ด้านหน้า และแขนทั้ง 2 ข้าง'],
 ['ท่าสือลากหาง','ท่ารำฟ้อนดาบ','คอ บ่า หัวไหล่ แขน ลำตัวด้านข้าง กล้ามเนื้ออก และหน้าแข้ง']];
+const SIDE_LBL=[['ข้างซ้าย','ข้างขวา'],['ยืดไปข้างซ้าย','ยืดไปข้างขวา'],['ค้างท่า (20 วินาที)'],['ข้างซ้าย','ข้างขวา'],['มือซ้ายดัด • มือขวาจีบ','มือซ้ายจีบ • มือขวาดัด'],['หันไปด้านซ้าย','หันไปด้านขวา'],['หันขวา • แขนไปทางซ้าย','หันซ้าย • แขนไปทางขวา'],['แขนซ้ายผายออก','แขนขวาผายออก'],['แขนขวาเหยียดตึง','แขนซ้ายเหยียดตึง'],['ตั้งวงซ้าย • แขนขวาเหยียด','ตั้งวงขวา • แขนซ้ายเหยียด'],['หันซ้าย • ประนมมือไปขวา','หันขวา • ประนมมือไปซ้าย'],['นั่งตรง หันซ้าย','นั่งตรง หันขวา']];
+const IMG=(i,k)=>`img/p${i+1}-${k+1}.jpg`;
 const $=s=>document.querySelector(s),app=$('#app');
 let user=null,profile=null,rec=null,stream=null,chunks=[];
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -142,7 +144,7 @@ async function startAct(){
  catch(e){return alert('เปิดกล้องไม่ได้ กรุณาอนุญาตการใช้กล้องแล้วลองใหม่')}
  shell(`<div class="card"><h2 class="center">ปรับกล้องให้พร้อม แล้วกดเริ่ม</h2>
 <p class="hint center">เลือกฟิลเตอร์และมุมกล้องได้ตามสบาย ระบบจะเริ่มบันทึกและจับเวลาเมื่อคุณกดปุ่มเริ่มเท่านั้น</p>
-<div class="pgrid"><div class="poseFig"><img src="img/p1.jpg" alt="ท่า${POSES[0][0]}"><p class="mut" style="margin:6px 0 0">ท่าแรก: ${POSES[0][0]}</p></div>
+<div class="pgrid"><div class="poseFig"><img src="${IMG(0,0)}" alt="ท่า${POSES[0][0]}"><p class="mut" style="margin:6px 0 0">ท่าแรก: ${POSES[0][0]}</p></div>
 <div><div class="camBox"><video id="cam" playsinline muted autoplay></video></div>${camTools()}</div></div>
 <button style="margin-top:14px" onclick="beginAct()">▶ เริ่มท่าที่ 1</button></div>`,1);
  $('#cam').srcObject=stream;applyCam()}
@@ -155,10 +157,10 @@ function beep(n=1,f=880){try{AC=AC||new (window.AudioContext||window.webkitAudio
  for(let k=0;k<n;k++){const o=AC.createOscillator(),g=AC.createGain(),s=AC.currentTime+k*.3;o.frequency.value=f;o.connect(g);g.connect(AC.destination);
  g.gain.setValueAtTime(.0001,s);g.gain.exponentialRampToValueAtTime(.4,s+.02);g.gain.exponentialRampToValueAtTime(.0001,s+.25);o.start(s);o.stop(s+.26)}}catch(e){}}
 function step(i,t0,mime){clearInterval(tm);if(paused){paused=false;try{rec.resume()}catch(e){}}
- if(i>=POSES.length)return finish(t0,mime);const p=POSES[i];let s=HOLD_SEC,ph='hold';const SIDES=i==2?['ค้างท่า (20 วินาที)']:['ข้างซ้าย','ข้างขวา'];let si=0;
+ if(i>=POSES.length)return finish(t0,mime);const p=POSES[i];let s=HOLD_SEC,ph='hold';const SIDES=SIDE_LBL[i];let si=0;SIDES.forEach((_,k)=>{new Image().src=IMG(i,k)});if(POSES[i+1])new Image().src=IMG(i+1,0);
  shell(`<div class="card"><div class="stepbar">${POSES.map((_,j)=>`<div class="${j<=i?'on':''}"></div>`).join('')}</div>
 <h2 id="pt">ท่าที่ ${i+1}/12: ${p[0]}</h2>
-<div class="pgrid"><div class="poseFig"><img id="pimg" src="img/p${i+1}.jpg" alt="ท่า${p[0]}"></div>
+<div class="pgrid"><div class="poseFig"><img id="pimg" src="${IMG(i,0)}" alt="ท่า${p[0]}"></div>
 <div><div class="camBox"><video id="cam" playsinline muted autoplay class="${mir?'mirror':''}"></video><div class="badge" id="bd">● กำลังบันทึก</div><div class="timer" id="cd">${s}</div><div class="phase" id="ph">${SIDES[0]}</div></div>
 ${camTools()}</div></div>
 <div class="ben" style="margin-top:12px" id="inf"><b>💚 ประโยชน์</b>ประยุกต์จาก${p[1]} ช่วยยืดกล้ามเนื้อ${p[2]}</div>
@@ -166,11 +168,11 @@ ${camTools()}</div></div>
  $('#cam').srcObject=stream;applyCam();
  tm=setInterval(()=>{if(paused)return;s--;
   if(s<=0){
-   if(ph=='hold'&&si<SIDES.length-1){si++;s=HOLD_SEC;beep(2);$('#ph').textContent='สลับ → '+SIDES[si];$('#cd').textContent=s;return}
+   if(ph=='hold'&&si<SIDES.length-1){si++;s=HOLD_SEC;beep(2);$('#ph').textContent='สลับ → '+SIDES[si];$('#pimg').src=IMG(i,si);$('#cd').textContent=s;return}
    if(ph=='hold'){beep(2);if(i>=POSES.length-1){clearInterval(tm);return finish(t0,mime)}
     ph='rest';s=REST_SEC;const n=POSES[i+1];
     $('#bd').textContent='😌 พัก';$('#bd').classList.add('restb');$('#cd').classList.add('rest');$('#ph').textContent='พัก • ท่าถัดไป: '+n[0];
-    $('#pimg').src=`img/p${i+2}.jpg`;$('#pt').textContent=`พัก ${REST_SEC} วินาที → ท่าที่ ${i+2}: ${n[0]}`;
+    $('#pimg').src=IMG(i+1,0);$('#pt').textContent=`พัก ${REST_SEC} วินาที → ท่าที่ ${i+2}: ${n[0]}`;
    }else{beep(3,1040);return step(i+1,t0,mime)}
   }
   $('#cd').textContent=s},1000)}
