@@ -33,8 +33,8 @@ video.rev{width:100%;border-radius:16px;background:#000;margin-top:6px}
 .alink{text-align:center;margin-top:10px}.alink a{color:var(--deep);cursor:pointer;text-decoration:underline}
 </style></head><body><main id="app"></main>
 <script>
-const SUPABASE_URL='https://fsijtvltwrxahbgnqpjo.supabase.co',SUPABASE_ANON_KEY='sb_publishable_lt5OhudLmXF0wkH98HE83Q_2riJz1kd';
-const DOMAIN='@snc.ac.th',HOLD_SEC=20,SINGLE_SEC=20,REST_SEC=10,SINGLE=[2],GOAL=5,DAYS=3;
+const SUPABASE_URL='https://YOUR-PROJECT.supabase.co',SUPABASE_ANON_KEY='YOUR-ANON-KEY';
+const DOMAIN='@snc.ac.th',HOLD_SEC=20,REST_SEC=10,GOAL=5,DAYS=3;
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 const POSES=[
 ['ท่าผางประมะ','ท่าฟ้อนผาง','คอ บ่า และกล้ามเนื้อข้างลำตัวซ้าย-ขวา'],
@@ -120,7 +120,7 @@ function page(k){shell(`<div class='card'>${PAGES[k]}</div>`,1)}
 
 // ---------- Activity ----------
 function activity(){shell(`<div class="card"><h2 class="center">🧘 กิจกรรมคลายปวดคอ 12 ท่า</h2>
-<p class="hint center">ระบบจะเปิดกล้องและบันทึกวิดีโอขณะทำกิจกรรม เฉพาะผู้ดูแลระบบเท่านั้นที่ดูได้</p><div class="ben center"><b>⏱ ใช้เวลารวมประมาณ ${totalMin()} นาที</b>ค้างท่าข้างละ ${HOLD_SEC} วินาที (ท่าที่ 3 ${SINGLE_SEC} วินาที) พักระหว่างช่วง ${REST_SEC} วินาที</div>
+<p class="hint center">ระบบจะเปิดกล้องและบันทึกวิดีโอขณะทำกิจกรรม เฉพาะผู้ดูแลระบบเท่านั้นที่ดูได้</p>
 ${POSES.map((p,i)=>`<div class="ben"><b>ท่าที่ ${i+1} ${p[0]}</b>ประยุกต์จาก${p[1]}<br>ช่วยยืดกล้ามเนื้อ${p[2]}</div>`).join('')}
 <button onclick="startAct()">▶ เริ่มทำกิจกรรม</button></div>`,1)}
 const stopCam=()=>{clearInterval(tm);try{rec&&rec.state!='inactive'&&rec.stop()}catch(e){}stream?.getTracks().forEach(t=>t.stop());stream=rec=null};
@@ -136,28 +136,24 @@ let AC=null;
 function beep(n=1,f=880){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();AC.resume();
  for(let k=0;k<n;k++){const o=AC.createOscillator(),g=AC.createGain(),s=AC.currentTime+k*.3;o.frequency.value=f;o.connect(g);g.connect(AC.destination);
  g.gain.setValueAtTime(.0001,s);g.gain.exponentialRampToValueAtTime(.4,s+.02);g.gain.exponentialRampToValueAtTime(.0001,s+.25);o.start(s);o.stop(s+.26)}}catch(e){}}
-const SEGS=POSES.flatMap((_,i)=>SINGLE.includes(i)?[{p:i,side:'',sec:SINGLE_SEC}]:[{p:i,side:'ข้างซ้าย',sec:HOLD_SEC},{p:i,side:'ข้างขวา',sec:HOLD_SEC}]);
-const remSec=k=>SEGS.slice(k).reduce((a,g)=>a+g.sec,0)+(SEGS.length-k-1)*REST_SEC;
-const totalMin=()=>(remSec(0)/60).toFixed(1);
-const segName=g=>`${POSES[g.p][0]}${g.side?' ('+g.side+')':''}`;
-function step(k,t0,mime){clearInterval(tm);
- if(k>=SEGS.length)return finish(t0,mime);const g=SEGS[k],i=g.p,p=POSES[i];let s=g.sec,ph='hold';
+function step(i,t0,mime){clearInterval(tm);
+ if(i>=POSES.length)return finish(t0,mime);const p=POSES[i];let s=HOLD_SEC,ph='hold';const SIDES=i==2?['ค้างท่า (20 วินาที)']:['ข้างซ้าย','ข้างขวา'];let si=0;
  shell(`<div class="card"><div class="stepbar">${POSES.map((_,j)=>`<div class="${j<=i?'on':''}"></div>`).join('')}</div>
-<h2 id="pt">ท่าที่ ${i+1}/12: ${segName(g)}</h2>
+<h2 id="pt">ท่าที่ ${i+1}/12: ${p[0]}</h2>
 <div class="pgrid"><div class="poseFig"><img id="pimg" src="img/p${i+1}.jpg" alt="ท่า${p[0]}"></div>
-<div><div class="camBox"><video id="cam" playsinline muted autoplay class="${mir?'mirror':''}"></video><div class="badge" id="bd">● กำลังบันทึก</div><div class="timer" id="cd">${s}</div><div class="phase" id="ph">ค้างท่า${g.side?' • '+g.side:''}</div></div>
+<div><div class="camBox"><video id="cam" playsinline muted autoplay class="${mir?'mirror':''}"></video><div class="badge" id="bd">● กำลังบันทึก</div><div class="timer" id="cd">${s}</div><div class="phase" id="ph">${SIDES[0]}</div></div>
 <div class="row" style="margin-top:8px"><button class="alt sm" onclick="mir=!mir;$('#cam').classList.toggle('mirror',mir)">↔ กลับด้านภาพ</button><button class="alt sm" onclick="beep()">🔔 ทดสอบเสียง</button></div></div></div>
-<div class="ben" style="margin-top:12px"><b>💚 ประโยชน์</b>ประยุกต์จาก${p[1]} ช่วยยืดกล้ามเนื้อ${p[2]}</div>
-<p class="hint center">ช่วงที่ ${k+1}/${SEGS.length} • เหลือประมาณ ${Math.ceil(remSec(k)/60)} นาที</p>
-<button onclick="step(${k+1},${t0},'${mime}')">${k<SEGS.length-1?'ข้ามไปช่วงถัดไป ➜':'เสร็จสิ้น ✓'}</button></div>`);
+<div class="ben" style="margin-top:12px" id="inf"><b>💚 ประโยชน์</b>ประยุกต์จาก${p[1]} ช่วยยืดกล้ามเนื้อ${p[2]}</div>
+<button onclick="step(${i+1},${t0},'${mime}')">${i<11?'ข้ามไปท่าถัดไป ➜':'เสร็จสิ้น ✓'}</button></div>`);
  $('#cam').srcObject=stream;
  tm=setInterval(()=>{s--;
   if(s<=0){
-   if(ph=='hold'){beep(2);if(k>=SEGS.length-1){clearInterval(tm);return finish(t0,mime)}
-    ph='rest';s=REST_SEC;const n=SEGS[k+1];
-    $('#bd').textContent='😌 พัก';$('#bd').classList.add('restb');$('#cd').classList.add('rest');$('#ph').textContent='พัก • ถัดไป: '+segName(n);
-    $('#pimg').src=`img/p${n.p+1}.jpg`;$('#pt').textContent=`พัก ${REST_SEC} วินาที → ท่าที่ ${n.p+1}: ${segName(n)}`;
-   }else{beep(3,1040);return step(k+1,t0,mime)}
+   if(ph=='hold'&&si<SIDES.length-1){si++;s=HOLD_SEC;beep(2);$('#ph').textContent='สลับ → '+SIDES[si];$('#cd').textContent=s;return}
+   if(ph=='hold'){beep(2);if(i>=POSES.length-1){clearInterval(tm);return finish(t0,mime)}
+    ph='rest';s=REST_SEC;const n=POSES[i+1];
+    $('#bd').textContent='😌 พัก';$('#bd').classList.add('restb');$('#cd').classList.add('rest');$('#ph').textContent='พัก • ท่าถัดไป: '+n[0];
+    $('#pimg').src=`img/p${i+2}.jpg`;$('#pt').textContent=`พัก ${REST_SEC} วินาที → ท่าที่ ${i+2}: ${n[0]}`;
+   }else{beep(3,1040);return step(i+1,t0,mime)}
   }
   $('#cd').textContent=s},1000)}
 async function finish(t0,mime){clearInterval(tm);shell('<div class="card center"><h2>กำลังบันทึกข้อมูล...</h2><p class="hint">อย่าปิดหน้านี้</p></div>');
