@@ -1,0 +1,232 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#c8efe3"><title>App stretch for Relax</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<style>
+:root{--mint:#c8efe3;--mint2:#eefaf6;--mint3:#7fd8bd;--deep:#2a9d8f;--ink:#1f4d47;--card:#fff;--ac:#2a9d8f}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:'Prompt','Noto Sans Thai',system-ui,sans-serif;background:radial-gradient(circle at 15% 0,#fff 0,transparent 40%),linear-gradient(160deg,var(--mint2),var(--mint));color:var(--ink);min-height:100vh;min-height:100dvh;font-size:16px;-webkit-text-size-adjust:100%;line-height:1.6}
+main{max-width:820px;margin:0 auto;padding:max(24px,env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) calc(70px + env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left))}
+h1{font-size:30px;margin:6px 0;text-align:center}h2{font-size:22px;margin:0 0 12px}.sub{text-align:center;opacity:.8;margin:0 0 18px}
+.card{background:#fff;border-radius:26px;padding:22px;box-shadow:0 8px 24px rgba(42,157,143,.18);margin-bottom:16px}
+.ben{background:var(--mint2);border-radius:16px;padding:12px 14px;margin:0 0 12px;line-height:1.55}.ben b{display:block;margin-bottom:2px}
+input{width:100%;font:inherit;font-size:18px;padding:14px 16px;border:2px solid var(--mint);border-radius:16px;background:var(--mint2);color:var(--ink);margin:0 0 12px}
+input:focus{outline:none;border-color:var(--deep)}
+button{font:inherit;font-size:18px;font-weight:500;border:0;border-radius:999px;padding:14px 26px;background:var(--deep);color:#fff;cursor:pointer;box-shadow:0 4px 0 #1f7a6f;width:100%;margin:6px 0}
+button:active{transform:translateY(2px);box-shadow:0 2px 0 #1f7a6f}button:focus-visible{outline:3px solid #f6c945}
+button.alt{background:#fff;color:var(--deep);border:2px solid var(--mint3);box-shadow:none}button.sm{font-size:15px;padding:8px 16px;width:auto}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.center{text-align:center}.hint,.mut{font-size:14px;opacity:.75}.err{color:#d1495b;font-weight:600}
+.top{display:flex;justify-content:space-between;margin-bottom:8px}.top button{margin:0}
+.hero{font-size:60px;text-align:center;line-height:1}
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:12px}.tile{background:#fff;border:2px solid var(--mint);border-radius:22px;padding:18px 10px;text-align:center;box-shadow:0 6px 16px rgba(42,157,143,.14);color:var(--ink);font-weight:500;margin:0}
+.tile span{display:block;font-size:38px}.tile.go{grid-column:1/-1;background:var(--deep);color:#fff;border-color:var(--deep)}
+.day{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:12px 14px;border-radius:20px;background:var(--mint2);margin:10px 0}.day.today{outline:3px solid var(--mint3);background:#fff}.day b{flex:1;min-width:80px}
+.slot{padding:6px 12px;border-radius:999px;font-size:14px;background:#fff;border:2px solid var(--mint)}.slot.done{background:#e6f9ee;border-color:#4caf50;color:#1b8a5a;font-weight:600}
+.bar{height:12px;background:var(--mint);border-radius:8px;overflow:hidden}.bar i{display:block;height:100%;background:var(--deep)}
+.stepbar{display:flex;gap:4px;margin-bottom:14px}.stepbar div{flex:1;height:10px;border-radius:99px;background:var(--mint)}.stepbar .on{background:var(--deep)}
+.pgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:start}.poseFig img{max-height:58vh;object-fit:contain;background:#f3fbf8}.timer.rest{font-size:48px}.phase{position:absolute;left:12px;bottom:12px;background:rgba(0,0,0,.55);color:#fff;border-radius:14px;padding:4px 12px;font-weight:600}
+.poseFig{text-align:center}.poseFig img{width:100%;border-radius:16px;border:2px solid var(--mint)}
+.camBox{position:relative;border-radius:22px;overflow:hidden;background:#123;aspect-ratio:4/3;width:100%}.camBox video{width:100%;height:100%;object-fit:cover}.mirror{transform:scaleX(-1)}
+.badge.restb{background:rgba(42,157,143,.95)}.badge{position:absolute;top:12px;left:12px;background:rgba(231,111,111,.95);color:#fff;border-radius:999px;padding:6px 14px;font-weight:600}
+.timer{position:absolute;right:14px;bottom:10px;font-size:64px;font-weight:600;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.5)}
+video.rev{width:100%;border-radius:16px;background:#000;margin-top:6px}
+.alink{text-align:center;margin-top:10px}.alink a{color:var(--deep);cursor:pointer;text-decoration:underline}
+button.chip{width:auto;font-size:14px;padding:6px 14px;margin:0;background:#fff;color:var(--deep);border:2px solid var(--mint3);box-shadow:none;white-space:nowrap;flex:none}
+button.chip.on{background:var(--deep);color:#fff;border-color:var(--deep)}
+.pgrid>*{min-width:0}.chips{max-width:100%;-webkit-overflow-scrolling:touch;display:flex;gap:6px;overflow-x:auto;padding:8px 0 2px}
+.stat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;text-align:center}.stat div{background:var(--mint2);border-radius:16px;padding:10px 4px}.stat b{display:block;font-size:24px}
+@media(max-width:640px){
+main{padding-top:max(14px,env(safe-area-inset-top));padding-left:max(10px,env(safe-area-inset-left));padding-right:max(10px,env(safe-area-inset-right))}
+h1{font-size:25px}h2{font-size:19px}.card{padding:16px 14px;border-radius:22px}
+.pgrid{gap:8px}.poseFig img{max-height:none;aspect-ratio:3/4;object-fit:cover}
+.camBox{aspect-ratio:3/4;border-radius:16px}
+.timer{top:8px;right:10px;bottom:auto;font-size:38px}.timer.rest{font-size:32px}
+.badge{top:8px;left:8px;font-size:11px;padding:3px 9px}
+.phase{left:6px;right:6px;bottom:6px;font-size:12px;text-align:center;border-radius:10px;padding:3px 6px;line-height:1.3}
+button.sm{font-size:14px;padding:8px 12px;flex:1}.menu{gap:8px}.tile{padding:14px 6px}
+.stat b{font-size:20px}
+}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style></head><body><main id="app"></main>
+<script>
+const SUPABASE_URL='https://YOUR-PROJECT.supabase.co',SUPABASE_ANON_KEY='YOUR-ANON-KEY';
+const DOMAIN='@snc.ac.th',HOLD_SEC=20,REST_SEC=10,GOAL=5,DAYS=3;
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+const POSES=[
+['ท่าผางประมะ','ท่าฟ้อนผาง','คอ บ่า และกล้ามเนื้อข้างลำตัวซ้าย-ขวา'],
+['ท่าล้างไหม','ท่าฟ้อนสาวไหม','คอ ไหล่ลงมาที่บ่า รักแร้ แขน ข้อมือ และลำตัว'],
+['ท่าผางไขอก','ท่าฟ้อนผาง','หน้าอก รักแร้ แขน และข้อมือทั้ง 2 ข้าง'],
+['ท่าเกี้ยวเกล้า','ท่าฟ้อนดาบ','ช่วงลำตัว หน้าอก รักแร้ แขน และข้อมือทั้ง 2 ข้าง'],
+['ท่าคลายปมไหม','ท่าฟ้อนสาวไหม','หัวไหล่ลงมาที่รักแร้ แขน ข้อมือ รวมถึงหน้าอกและหลัง'],
+['ท่าไหว้','ท่าฟ้อนบูชา','คอ หัวไหล่ และรักแร้ทั้ง 2 ข้าง'],
+['ท่าแง้น','ท่าฟ้อนแง้น','หน้าอก รักแร้ แขน ข้อมือ และกล้ามเนื้อด้านหน้า-หลังลำตัว'],
+['ท่าผางสาวหลวง','ท่าฟ้อนเจิง','คอ บ่า สะบัก หัวไหล่ด้านหลัง และกล้ามเนื้อข้างลำตัว'],
+['ท่าออกวงเกวียน','ท่าฟ้อนผาง','คอ หัวไหล่ รักแร้ แขน ข้อมือ และด้านข้างลำตัว'],
+['ท่าวาดมือ','ท่าฟ้อนขันดอก','หัวไหล่ รักแร้ แขน ข้อมือ และหน้าอก'],
+['ท่าวาดมือไปด้านหลัง','ท่าตบมะผาบ','หน้าอก หัวไหล่ด้านหน้า และแขนทั้ง 2 ข้าง'],
+['ท่าสือลากหาง','ท่ารำฟ้อนดาบ','คอ บ่า หัวไหล่ แขน ลำตัวด้านข้าง กล้ามเนื้ออก และหน้าแข้ง']];
+const SIDE_LBL=[['ข้างซ้าย','ข้างขวา'],['ยืดไปข้างซ้าย','ยืดไปข้างขวา'],['ค้างท่า (20 วินาที)'],['ข้างซ้าย','ข้างขวา'],['มือซ้ายดัด • มือขวาจีบ','มือซ้ายจีบ • มือขวาดัด'],['หันไปด้านซ้าย','หันไปด้านขวา'],['หันขวา • แขนไปทางซ้าย','หันซ้าย • แขนไปทางขวา'],['แขนซ้ายผายออก','แขนขวาผายออก'],['แขนขวาเหยียดตึง','แขนซ้ายเหยียดตึง'],['ตั้งวงซ้าย • แขนขวาเหยียด','ตั้งวงขวา • แขนซ้ายเหยียด'],['หันซ้าย • ประนมมือไปขวา','หันขวา • ประนมมือไปซ้าย'],['นั่งตรง หันซ้าย','นั่งตรง หันขวา']];
+const IMG=(i,k)=>`img/p${i+1}-${k+1}.jpg`;
+const $=s=>document.querySelector(s),app=$('#app');
+let user=null,profile=null,rec=null,stream=null,chunks=[];
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+// ---------- Auth ----------
+const shell=(h,back)=>app.innerHTML=(user?`<div class="top">${back?'<button class="alt sm" onclick="home()">⬅ กลับ</button>':'<span></span>'}<button class="alt sm" onclick="logout()">ออกจากระบบ</button></div>`:'')+h;
+const INTRO=`<div class="ben"><b>🩺 ปวดคอ บ่า ไหล่ เกิดจากอะไร?</b>การก้มมองมือถือหรือนั่งก้มนาน ๆ ทำให้กล้ามเนื้อคอ บ่า และสะบักเกร็งค้าง จนตึง ล้า ปวดเมื่อย
+<b style="margin-top:8px">💚 ช่วยได้อย่างไร?</b>การยืดเหยียดเบา ๆ สม่ำเสมอช่วยคลายกล้ามเนื้อ ให้ทำช้า ๆ ไม่กระชาก และหยุดหากปวดมากขึ้นหรือมีอาการชา</div>`;
+function authView(mode='login',msg=''){shell(`<h1>🌿 App stretch for Relax</h1><p class="sub">ยืดเหยียดคลายปวดคอด้วยท่าฟ้อนล้านนาประยุกต์</p>
+<section class="card"><div class="hero">🌿</div>${INTRO}<h2 class="center">${mode=='login'?'ลงชื่อเข้าใช้':'ลงทะเบียน'}</h2>
+${mode=='reg'?'<input id="nm" placeholder="ชื่อ-นามสกุล" autocomplete="name">':''}
+<input id="em" type="email" inputmode="email" placeholder="อีเมล ${DOMAIN}" autocomplete="email">
+<input id="pw" type="password" placeholder="รหัสผ่าน (อย่างน้อย 6 ตัว)" autocomplete="${mode=='login'?'current-password':'new-password'}">
+<p class="err" id="msg">${msg}</p><button onclick="${mode=='login'?'login()':'register()'}">${mode=='login'?'เข้าสู่ระบบ ✨':'ลงทะเบียน ✨'}</button>
+<div class="alink"><a onclick="authView('${mode=='login'?'reg':'login'}')">${mode=='login'?'ยังไม่มีบัญชี? ลงทะเบียน':'มีบัญชีแล้ว? เข้าสู่ระบบ'}</a></div></section>`)}
+const okMail=e=>/^[^@\s]+@snc\.ac\.th$/i.test(e.trim());
+async function register(){const e=$('#em').value.trim(),n=$('#nm').value.trim(),p=$('#pw').value;
+ if(!n)return $('#msg').textContent='กรอกชื่อ-นามสกุล';if(!okMail(e))return $('#msg').textContent='ใช้ได้เฉพาะอีเมล '+DOMAIN;
+ const{error}=await sb.auth.signUp({email:e,password:p,options:{data:{full_name:n}}});
+ if(error)return $('#msg').textContent=error.message;boot()}
+async function login(){const e=$('#em').value.trim();if(!okMail(e))return $('#msg').textContent='ใช้ได้เฉพาะอีเมล '+DOMAIN;
+ const{error}=await sb.auth.signInWithPassword({email:e,password:$('#pw').value});if(error)return $('#msg').textContent='อีเมลหรือรหัสผ่านไม่ถูกต้อง';boot()}
+async function logout(){stopCam();await sb.auth.signOut();user=profile=null;authView()}
+async function boot(){const{data}=await sb.auth.getSession();user=data.session?.user||null;
+ if(!user)return authView();
+ const r=await sb.from('profiles').select('*').eq('id',user.id).single();profile=r.data;home()}
+
+// ---------- Home ----------
+const dkey=d=>new Date(d).toLocaleDateString('sv-SE');
+async function home(){stopCam();
+ const start=new Date();start.setHours(0,0,0,0);start.setDate(start.getDate()-(DAYS-1));
+ const{data}=await sb.from('activity_logs').select('started_at').eq('user_id',user.id).gte('started_at',start.toISOString());
+ const per={};(data||[]).forEach(r=>{const k=dkey(r.started_at);per[k]=(per[k]||0)+1});
+ const c=(data||[]).length,days=[...Array(DAYS)].map((_,i)=>{const d=new Date(start);d.setDate(d.getDate()+i);return d});
+ shell(`<h1>🌿 App stretch for Relax</h1>
+<div class="card center"><h2>สวัสดี ${esc(profile?.full_name||'')} 💚</h2>
+<p class="hint" style="margin:0">เป้าหมาย: ทำให้ครบ ${GOAL} ครั้งใน ${DAYS} วัน</p>
+<div class="bar" style="margin:10px 0"><i style="width:${Math.min(100,c/GOAL*100)}%"></i></div><b>${c}/${GOAL} ครั้ง</b>
+${days.map((d,i)=>{const n=per[dkey(d)]||0,today=i==DAYS-1;return `<div class="day ${today?'today':''}"><b>${d.toLocaleDateString('th-TH',{weekday:'short',day:'numeric',month:'short'})}${today?' (วันนี้)':''}</b>${[...Array(Math.max(2,n))].map((_,j)=>`<span class="slot ${j<n?'done':''}">${j<n?'✓ ทำแล้ว':'รอบที่ '+(j+1)}</span>`).join('')}</div>`}).join('')}</div>
+<div class="menu"><button class="tile" onclick="page('cause')"><span>🩺</span>สาเหตุปวดคอ</button><button class="tile" onclick="page('tools')"><span>📋</span>แบบประเมิน NDI / NRS</button>
+<button class="tile" onclick="page('physio')"><span>💆</span>กายภาพบำบัด</button><button class="tile go" onclick="activity()"><span>🧘</span>มาคลายปวดเมื่อยคอกันเถอะ</button></div>
+${profile?.role=='admin'?'<div class="alink"><a onclick="admin()">สำหรับผู้ดูแลระบบ (Admin): ดูวิดีโอ</a></div>':''}`)}
+
+const PAGES={
+cause:`<h1>สาเหตุของอาการปวดคอ</h1>
+<div class="card"><h2>กายวิภาคศาสตร์</h2><p>กระดูกสันหลังคอ 7 ชิ้น (C1–C7) รองรับศีรษะที่หนักราว 4.5–5 กก. มีหมอนรองกระดูก ข้อต่อ เอ็นยึด และกล้ามเนื้อหลายชั้น เช่น upper trapezius, levator scapulae, sternocleidomastoid และกลุ่ม deep neck flexors ที่ช่วยพยุงคอ</p></div>
+<div class="card"><h2>สรีรวิทยา</h2><p>การก้มคอใช้โทรศัพท์หรือนั่งท่าเดิมนาน ทำให้กล้ามเนื้อด้านหลังคอและบ่าต้องหดเกร็งต้านแรงโน้มถ่วงต่อเนื่อง เลือดไหลเวียนลดลง เกิดความล้า จุดกดเจ็บ และเอ็นหรือข้อต่อถูกยืดค้าง จนปวดเมื่อย</p></div>
+<div class="card"><h2>แรงที่คอเพิ่มขึ้นตามองศาก้ม</h2>
+<svg viewBox="0 0 300 150" width="100%" role="img" aria-label="แรงที่คอตามองศาก้ม"><g fill="#5b3f8c">
+<rect x="20" y="115" width="40" height="20" rx="3"/><rect x="85" y="95" width="40" height="40" rx="3"/><rect x="150" y="75" width="40" height="60" rx="3"/><rect x="215" y="45" width="40" height="90" rx="3"/></g>
+<g font-size="11" text-anchor="middle" fill="#1d2b2a"><text x="40" y="110">12 กก.</text><text x="105" y="90">18 กก.</text><text x="170" y="70">22 กก.</text><text x="235" y="40">27 กก.</text>
+<text x="40" y="148">15°</text><text x="105" y="148">30°</text><text x="170" y="148">45°</text><text x="235" y="148">60°</text></g></svg>
+<p class="mut">ค่าประมาณจากแบบจำลองของ Hansraj (2014)</p></div>
+<div class="card"><h2>แหล่งอ้างอิง</h2><ol class="mut"><li>Bogduk N, McGuirk B. Medical Management of Acute and Chronic Neck Pain. Elsevier; 2006.</li>
+<li>Bogduk N. The anatomy and pathophysiology of neck pain. Phys Med Rehabil Clin N Am. 2011;22(3):367-82.</li>
+<li>Hansraj KK. Assessment of stresses in the cervical spine caused by posture and position of the head. Surg Technol Int. 2014;25:277-9.</li></ol></div>`,
+tools:`<h1>แบบประเมิน NDI และ NRS</h1>
+<div class="card"><h2>NDI (Neck Disability Index)</h2><p>แบบสอบถาม 10 ข้อ (ความปวด การดูแลตนเอง การยก การอ่าน ปวดศีรษะ สมาธิ การทำงาน การขับรถ การนอน การพักผ่อน) ข้อละ 0–5 คะแนน รวม 50 คะแนน (คูณ 2 เป็นร้อยละ)</p>
+<p>แปลผล: 0–4 ไม่มีความพิการ · 5–14 เล็กน้อย · 15–24 ปานกลาง · 25–34 รุนแรง · &gt;34 รุนแรงมากที่สุด (คะแนนดิบ)</p></div>
+<div class="card"><h2>NRS (Numeric Rating Scale)</h2><p>ให้ผู้ใช้ให้คะแนนความปวดปัจจุบันจาก 0 (ไม่ปวด) ถึง 10 (ปวดมากที่สุด) &nbsp; 1–3 ปวดน้อย · 4–6 ปานกลาง · 7–10 มาก</p></div>
+<div class="card"><h2>แหล่งอ้างอิง</h2><ol class="mut"><li>Vernon H, Mior S. The Neck Disability Index: a study of reliability and validity. J Manipulative Physiol Ther. 1991;14(7):409-15.</li>
+<li>Cleland JA, Childs JD, Whitman JM. Psychometric properties of the Neck Disability Index and Numeric Pain Rating Scale in patients with mechanical neck pain. Arch Phys Med Rehabil. 2008;89(1):69-74.</li></ol></div>`,
+physio:`<h1>คำแนะนำทางกายภาพบำบัด</h1>
+<div class="card"><ul><li>ยืดเหยียดและออกกำลังกายกล้ามเนื้อคอ-บ่า-สะบักเป็นประจำ มีหลักฐานว่าลดปวดคอเรื้อรังได้</li><li>ปรับท่าทาง: ยกหน้าจอให้อยู่ระดับสายตา หลีกเลี่ยงการก้มคอนาน</li><li>ลุกขยับทุก 30–60 นาที</li><li>ประคบอุ่นบริเวณคอ-บ่าที่เกร็ง</li><li>หยุดและพบแพทย์หากชา อ่อนแรง ปวดร้าวลงแขน ปวดรุนแรงหลังอุบัติเหตุ หรือปวดนานเกิน 2–4 สัปดาห์</li></ul></div>
+<div class="card"><h2>งานวิจัยรองรับ</h2><ol class="mut"><li>Blanpied PR, et al. Neck Pain: Revision 2017. J Orthop Sports Phys Ther. 2017;47(7):A1-A83.</li>
+<li>Gross A, et al. Exercises for mechanical neck disorders. Cochrane Database Syst Rev. 2015;(1):CD004250.</li></ol></div>
+<p class="mut">ข้อมูลนี้เพื่อการศึกษา ไม่ใช่การวินิจฉัยโรค</p>`};
+function page(k){shell(`<div class='card'>${PAGES[k]}</div>`,1)}
+
+// ---------- Activity ----------
+function activity(){shell(`<div class="card"><h2 class="center">🧘 กิจกรรมคลายปวดคอ 12 ท่า</h2>
+<p class="hint center">ระบบจะเปิดกล้องและบันทึกวิดีโอขณะทำกิจกรรม เฉพาะผู้ดูแลระบบเท่านั้นที่ดูได้</p>
+${POSES.map((p,i)=>`<div class="ben"><b>ท่าที่ ${i+1} ${p[0]}</b>ประยุกต์จาก${p[1]}<br>ช่วยยืดกล้ามเนื้อ${p[2]}</div>`).join('')}
+<button onclick="startAct()">▶ เริ่มทำกิจกรรม</button></div>`,1)}
+const stopCam=()=>{relWake();clearInterval(tm);try{rec&&rec.state!='inactive'&&rec.stop()}catch(e){}stream?.getTracks().forEach(t=>t.stop());stream=rec=null};
+let tm,mir=true,flt=0,paused=false;
+const FILTERS=[['ปกติ',''],['สดใส','brightness(1.08) contrast(1.08) saturate(1.35)'],['ผิวเนียน','brightness(1.12) contrast(.92) saturate(1.1) blur(.6px)'],['อบอุ่น','sepia(.25) saturate(1.3) brightness(1.06) hue-rotate(-8deg)'],['วินเทจ','sepia(.55) contrast(.95) brightness(1.04)'],['ขาวดำ','grayscale(1) contrast(1.1)']];
+function applyCam(){const v=$('#cam');if(!v)return;v.style.filter=FILTERS[flt][1];v.classList.toggle('mirror',mir)}
+function setFlt(k){flt=k;applyCam();document.querySelectorAll('.chip').forEach((c,j)=>c.classList.toggle('on',j==k))}
+const camTools=()=>`<div class="chips">${FILTERS.map((f,j)=>`<button class="chip ${j==flt?'on':''}" onclick="setFlt(${j})">${f[0]}</button>`).join('')}</div>
+<div class="row" style="margin-top:6px"><button class="alt sm" onclick="mir=!mir;applyCam()">↔ กลับด้านภาพ</button><button class="alt sm" onclick="beep()">🔔 ทดสอบเสียง</button></div>`;
+let wl=null;
+async function keepAwake(){try{if('wakeLock' in navigator)wl=await navigator.wakeLock.request('screen')}catch(e){}}
+function relWake(){try{wl&&wl.release()}catch(e){}wl=null}
+document.addEventListener('visibilitychange',()=>{if(document.hidden){if(rec&&rec.state=='recording'&&!paused)togglePause()}else if(stream)keepAwake()});
+function togglePause(){paused=!paused;try{paused?rec.pause():rec.resume()}catch(e){}
+ const b=$('#pz');if(b)b.textContent=paused?'▶ ทำต่อ':'⏸ หยุดชั่วคราว'}
+async function startAct(){
+ try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();AC.resume()}catch(e){}
+ try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false})}
+ catch(e){return alert(/Line\/|FBAN|FBAV|Instagram|MicroMessenger/i.test(navigator.userAgent)?'เบราว์เซอร์ในแอปนี้เปิดกล้องไม่ได้ กรุณากดเมนู "เปิดในเบราว์เซอร์" แล้วใช้ Safari หรือ Chrome':'เปิดกล้องไม่ได้ กรุณาอนุญาตการใช้กล้อง (ต้องเปิดผ่าน https) แล้วลองใหม่')}
+ shell(`<div class="card"><h2 class="center">ปรับกล้องให้พร้อม แล้วกดเริ่ม</h2>
+<p class="hint center">เลือกฟิลเตอร์และมุมกล้องได้ตามสบาย ระบบจะเริ่มบันทึกและจับเวลาเมื่อคุณกดปุ่มเริ่มเท่านั้น</p>
+<div class="pgrid"><div class="poseFig"><img src="${IMG(0,0)}" alt="ท่า${POSES[0][0]}"><p class="mut" style="margin:6px 0 0">ท่าแรก: ${POSES[0][0]}</p></div>
+<div><div class="camBox"><video id="cam" playsinline muted autoplay></video></div></div></div>${camTools()}
+<button style="margin-top:14px" onclick="beginAct()">▶ เริ่มท่าที่ 1</button></div>`,1);
+ $('#cam').srcObject=stream;applyCam();keepAwake()}
+function beginAct(){
+ const mt=['video/webm;codecs=vp8','video/webm','video/mp4'].find(t=>window.MediaRecorder&&MediaRecorder.isTypeSupported(t))||'';
+ chunks=[];rec=new MediaRecorder(stream,mt?{mimeType:mt,videoBitsPerSecond:600000}:{});rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);rec.start(1000);
+ step(0,Date.now(),rec.mimeType||mt||'video/webm')}
+let AC=null;
+function beep(n=1,f=880){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();AC.resume();
+ for(let k=0;k<n;k++){const o=AC.createOscillator(),g=AC.createGain(),s=AC.currentTime+k*.3;o.frequency.value=f;o.connect(g);g.connect(AC.destination);
+ g.gain.setValueAtTime(.0001,s);g.gain.exponentialRampToValueAtTime(.4,s+.02);g.gain.exponentialRampToValueAtTime(.0001,s+.25);o.start(s);o.stop(s+.26)}}catch(e){}}
+function step(i,t0,mime){clearInterval(tm);if(paused){paused=false;try{rec.resume()}catch(e){}}
+ if(i>=POSES.length)return finish(t0,mime);const p=POSES[i];let s=HOLD_SEC,ph='hold';const SIDES=SIDE_LBL[i];let si=0;SIDES.forEach((_,k)=>{new Image().src=IMG(i,k)});if(POSES[i+1])new Image().src=IMG(i+1,0);
+ shell(`<div class="card"><div class="stepbar">${POSES.map((_,j)=>`<div class="${j<=i?'on':''}"></div>`).join('')}</div>
+<h2 id="pt">ท่าที่ ${i+1}/12: ${p[0]}</h2>
+<div class="pgrid"><div class="poseFig"><img id="pimg" src="${IMG(i,0)}" alt="ท่า${p[0]}"></div>
+<div><div class="camBox"><video id="cam" playsinline muted autoplay class="${mir?'mirror':''}"></video><div class="badge" id="bd">● กำลังบันทึก</div><div class="timer" id="cd">${s}</div><div class="phase" id="ph">${SIDES[0]}</div></div></div></div>
+${camTools()}
+<div class="ben" style="margin-top:12px" id="inf"><b>💚 ประโยชน์</b>ประยุกต์จาก${p[1]} ช่วยยืดกล้ามเนื้อ${p[2]}</div>
+<button class="alt" id="pz" onclick="togglePause()">⏸ หยุดชั่วคราว</button><button onclick="step(${i+1},${t0},'${mime}')">${i<11?'ข้ามไปท่าถัดไป ➜':'เสร็จสิ้น ✓'}</button></div>`);
+ $('#cam').srcObject=stream;applyCam();
+ tm=setInterval(()=>{if(paused)return;s--;
+  if(s<=0){
+   if(ph=='hold'&&si<SIDES.length-1){si++;s=HOLD_SEC;beep(2);$('#ph').textContent='สลับ → '+SIDES[si];$('#pimg').src=IMG(i,si);$('#cd').textContent=s;return}
+   if(ph=='hold'){beep(2);if(i>=POSES.length-1){clearInterval(tm);return finish(t0,mime)}
+    ph='rest';s=REST_SEC;const n=POSES[i+1];
+    $('#bd').textContent='😌 พัก';$('#bd').classList.add('restb');$('#cd').classList.add('rest');$('#ph').textContent='พัก • ท่าถัดไป: '+n[0];
+    $('#pimg').src=IMG(i+1,0);$('#pt').textContent=`พัก ${REST_SEC} วินาที → ท่าที่ ${i+2}: ${n[0]}`;
+   }else{beep(3,1040);return step(i+1,t0,mime)}
+  }
+  $('#cd').textContent=s},1000)}
+async function finish(t0,mime){relWake();clearInterval(tm);shell('<div class="card center"><h2>กำลังบันทึกข้อมูล...</h2><p class="hint">อย่าปิดหน้านี้</p></div>');
+ await new Promise(r=>{rec.onstop=r;rec.stop()});stream.getTracks().forEach(t=>t.stop());
+ const ext=mime.includes('mp4')?'mp4':'webm',path=`${user.id}/${Date.now()}.${ext}`;
+ const up=await sb.storage.from('videos').upload(path,new Blob(chunks,{type:mime}),{contentType:mime});
+ const ins=await sb.from('activity_logs').insert({user_id:user.id,started_at:new Date(t0).toISOString(),duration_sec:Math.round((Date.now()-t0)/1000),video_path:up.error?null:path});
+ if(up.error||ins.error)return shell(`<div class="card center"><p class="err">บันทึกไม่สำเร็จ: ${esc((up.error||ins.error).message)}</p><button onclick="home()">กลับหน้าหลัก</button></div>`);
+ shell(`<div class="card center"><div style="font-size:70px">🎉</div><h2>ทำกิจกรรมเสร็จสิ้น</h2><p>ใช้เวลา ${Math.max(1,Math.round((Date.now()-t0)/60000))} นาที</p><p class="hint">อย่าลืมทำให้ครบ ${GOAL} ครั้งใน ${DAYS} วัน</p><button onclick="home()">กลับหน้าหลัก</button></div>`)}
+
+// ---------- Admin ----------
+let adm={users:[],logs:[],uid:'',q:''};
+const fmtDur=d=>Math.floor((d||0)/60)+' นาที '+((d||0)%60)+' วินาที';
+async function admin(){shell('<div class="card center">กำลังโหลด...</div>',1);
+ const[u,l]=await Promise.all([sb.from('profiles').select('id,full_name,email,role').order('full_name'),
+  sb.from('activity_logs').select('id,user_id,started_at,duration_sec,video_path').order('started_at',{ascending:false}).limit(500)]);
+ if(u.error||l.error)return shell(`<div class="card"><p class="err">${esc((u.error||l.error).message)}</p><p class="mut">ตรวจสอบว่ารัน setup.sql แล้ว และบัญชีนี้ถูกตั้งเป็น admin</p></div>`,1);
+ adm={users:u.data,logs:l.data,uid:'',q:''};adminView()}
+function userList(){const per={};adm.logs.forEach(r=>{const o=per[r.user_id]||(per[r.user_id]={n:0,last:r.started_at});o.n++});
+ const q=adm.q.toLowerCase();
+ return adm.users.filter(x=>!q||(x.full_name||'').toLowerCase().includes(q)||(x.email||'').toLowerCase().includes(q)).map(x=>{const o=per[x.id];
+  return `<div class="day ${adm.uid==x.id?'today':''}"><b>${esc(x.full_name||'-')}<br><span class="mut">${esc(x.email||'')}</span></b><span class="slot ${o?'done':''}">${o?o.n+' ครั้ง · ล่าสุด '+new Date(o.last).toLocaleDateString('th-TH'):'ยังไม่เคยทำ'}</span><button class="sm" onclick="adm.uid='${x.id}';adminView()">ดูวิดีโอ</button></div>`}).join('')||'<p class="mut">ไม่พบผู้ใช้</p>'}
+function adminView(){
+ const nm=Object.fromEntries(adm.users.map(x=>[x.id,x])),today=adm.logs.filter(r=>dkey(r.started_at)==dkey(new Date())).length,
+  vids=adm.logs.filter(r=>r.video_path&&(!adm.uid||r.user_id==adm.uid));
+ shell(`<div class="card"><h2>ผู้ดูแลระบบ</h2>
+<div class="stat"><div><b>${adm.users.length}</b>ผู้ใช้</div><div><b>${adm.logs.length}</b>ครั้งทั้งหมด</div><div><b>${today}</b>วันนี้</div></div>
+<input placeholder="ค้นหาชื่อหรืออีเมล" oninput="adm.q=this.value;$('#ul').innerHTML=userList()"><div id="ul">${userList()}</div>
+<button class="alt sm" onclick="admin()">🔄 รีเฟรชข้อมูล</button></div>
+<div class="card"><h2>วิดีโอ ${adm.uid?esc(nm[adm.uid]?.full_name||''):'ทั้งหมด (ล่าสุด)'}</h2>${adm.uid?'<button class="alt sm" onclick="adm.uid=\'\';adminView()">แสดงทุกคน</button>':''}
+${vids.map(r=>`<div class="ben"><b>${esc(nm[r.user_id]?.full_name||'-')} <span class="mut">${esc(nm[r.user_id]?.email||'')}</span></b><span class="mut">${new Date(r.started_at).toLocaleString('th-TH')} · ${fmtDur(r.duration_sec)}</span>
+<div class="row"><button class="sm" onclick="playVid('${r.id}')">▶ เปิดวิดีโอ</button><button class="alt sm" onclick="dlVid('${r.id}')">⬇ ดาวน์โหลด</button></div><div id="v${r.id}"></div></div>`).join('')||'<p class="mut">ยังไม่มีวิดีโอ</p>'}</div>`,1)}
+async function signed(id,dl){const r=adm.logs.find(x=>String(x.id)==String(id));
+ const{data,error}=await sb.storage.from('videos').createSignedUrl(r.video_path,3600,dl?{download:true}:undefined);
+ if(error){alert('เปิดไฟล์ไม่ได้: '+error.message);return null}return data.signedUrl}
+async function playVid(id){const u=await signed(id);if(u)$('#v'+id).innerHTML=`<video class="rev" controls playsinline autoplay src="${u}"></video>`}
+async function dlVid(id){const u=await signed(id,true);if(u)location.href=u}
+
+sb.auth.onAuthStateChange(()=>{});boot();
+</script></body></html>
