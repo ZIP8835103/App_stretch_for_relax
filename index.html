@@ -33,7 +33,7 @@ video.rev{width:100%;border-radius:16px;background:#000;margin-top:6px}
 .alink{text-align:center;margin-top:10px}.alink a{color:var(--deep);cursor:pointer;text-decoration:underline}
 </style></head><body><main id="app"></main>
 <script>
-const SUPABASE_URL='https://YOUR-PROJECT.supabase.co',SUPABASE_ANON_KEY='YOUR-ANON-KEY';
+const SUPABASE_URL='https://fsijtvltwrxahbgnqpjo.supabase.co',SUPABASE_ANON_KEY='sb_publishable_lt5OhudLmXF0wkH98HE83Q_2riJz1kd';
 const DOMAIN='@snc.ac.th',HOLD_SEC=20,REST_SEC=10,GOAL=5,DAYS=3;
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 const POSES=[
@@ -57,7 +57,7 @@ const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 const shell=(h,back)=>app.innerHTML=(user?`<div class="top">${back?'<button class="alt sm" onclick="home()">⬅ กลับ</button>':'<span></span>'}<button class="alt sm" onclick="logout()">ออกจากระบบ</button></div>`:'')+h;
 const INTRO=`<div class="ben"><b>🩺 ปวดคอ บ่า ไหล่ เกิดจากอะไร?</b>การก้มมองมือถือหรือนั่งก้มนาน ๆ ทำให้กล้ามเนื้อคอ บ่า และสะบักเกร็งค้าง จนตึง ล้า ปวดเมื่อย
 <b style="margin-top:8px">💚 ช่วยได้อย่างไร?</b>การยืดเหยียดเบา ๆ สม่ำเสมอช่วยคลายกล้ามเนื้อ ให้ทำช้า ๆ ไม่กระชาก และหยุดหากปวดมากขึ้นหรือมีอาการชา</div>`;
-function authView(mode='login',msg=''){shell(`<h1>🌿 App stretch for Relax</h1><p class="sub">ยืดเหยียดคลายปวดคอด้วยท่าฟ้อนล้านนาประยุกต์</p>
+function authView(mode='login',msg=''){shell(`<h1>🧑🏻‍🩰 App stretch for Relax</h1><p class="sub">ยืดเหยียดคลายปวดคอด้วยท่าฟ้อนล้านนาประยุกต์</p>
 <section class="card"><div class="hero">🌿</div>${INTRO}<h2 class="center">${mode=='login'?'ลงชื่อเข้าใช้':'ลงทะเบียน'}</h2>
 ${mode=='reg'?'<input id="nm" placeholder="ชื่อ-นามสกุล" autocomplete="name">':''}
 <input id="em" type="email" inputmode="email" placeholder="อีเมล ${DOMAIN}" autocomplete="email">
@@ -83,7 +83,7 @@ async function home(){stopCam();
  const{data}=await sb.from('activity_logs').select('started_at').eq('user_id',user.id).gte('started_at',start.toISOString());
  const per={};(data||[]).forEach(r=>{const k=dkey(r.started_at);per[k]=(per[k]||0)+1});
  const c=(data||[]).length,days=[...Array(DAYS)].map((_,i)=>{const d=new Date(start);d.setDate(d.getDate()+i);return d});
- shell(`<h1>🌿 App stretch for Relax</h1>
+ shell(`<h1>🧑🏻‍🩰 App stretch for Relax</h1>
 <div class="card center"><h2>สวัสดี ${esc(profile?.full_name||'')} 💚</h2>
 <p class="hint" style="margin:0">เป้าหมาย: ทำให้ครบ ${GOAL} ครั้งใน ${DAYS} วัน</p>
 <div class="bar" style="margin:10px 0"><i style="width:${Math.min(100,c/GOAL*100)}%"></i></div><b>${c}/${GOAL} ครั้ง</b>
