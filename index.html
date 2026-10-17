@@ -31,9 +31,13 @@ button.alt{background:#fff;color:var(--deep);border:2px solid var(--mint3);box-s
 .timer{position:absolute;right:14px;bottom:10px;font-size:64px;font-weight:600;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.5)}
 video.rev{width:100%;border-radius:16px;background:#000;margin-top:6px}
 .alink{text-align:center;margin-top:10px}.alink a{color:var(--deep);cursor:pointer;text-decoration:underline}
+button.chip{width:auto;font-size:14px;padding:6px 14px;margin:0;background:#fff;color:var(--deep);border:2px solid var(--mint3);box-shadow:none;white-space:nowrap;flex:none}
+button.chip.on{background:var(--deep);color:#fff;border-color:var(--deep)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:8px 0 2px}
+.stat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;text-align:center}.stat div{background:var(--mint2);border-radius:16px;padding:10px 4px}.stat b{display:block;font-size:24px}
 </style></head><body><main id="app"></main>
 <script>
-const SUPABASE_URL='https://fsijtvltwrxahbgnqpjo.supabase.co',SUPABASE_ANON_KEY='sb_publishable_lt5OhudLmXF0wkH98HE83Q_2riJz1kd';
+const SUPABASE_URL='https://YOUR-PROJECT.supabase.co',SUPABASE_ANON_KEY='YOUR-ANON-KEY';
 const DOMAIN='@snc.ac.th',HOLD_SEC=20,REST_SEC=10,GOAL=5,DAYS=3;
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 const POSES=[
@@ -57,7 +61,7 @@ const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 const shell=(h,back)=>app.innerHTML=(user?`<div class="top">${back?'<button class="alt sm" onclick="home()">⬅ กลับ</button>':'<span></span>'}<button class="alt sm" onclick="logout()">ออกจากระบบ</button></div>`:'')+h;
 const INTRO=`<div class="ben"><b>🩺 ปวดคอ บ่า ไหล่ เกิดจากอะไร?</b>การก้มมองมือถือหรือนั่งก้มนาน ๆ ทำให้กล้ามเนื้อคอ บ่า และสะบักเกร็งค้าง จนตึง ล้า ปวดเมื่อย
 <b style="margin-top:8px">💚 ช่วยได้อย่างไร?</b>การยืดเหยียดเบา ๆ สม่ำเสมอช่วยคลายกล้ามเนื้อ ให้ทำช้า ๆ ไม่กระชาก และหยุดหากปวดมากขึ้นหรือมีอาการชา</div>`;
-function authView(mode='login',msg=''){shell(`<h1>🧑🏻‍🩰 App stretch for Relax</h1><p class="sub">ยืดเหยียดคลายปวดคอด้วยท่าฟ้อนล้านนาประยุกต์</p>
+function authView(mode='login',msg=''){shell(`<h1>🌿 App stretch for Relax</h1><p class="sub">ยืดเหยียดคลายปวดคอด้วยท่าฟ้อนล้านนาประยุกต์</p>
 <section class="card"><div class="hero">🌿</div>${INTRO}<h2 class="center">${mode=='login'?'ลงชื่อเข้าใช้':'ลงทะเบียน'}</h2>
 ${mode=='reg'?'<input id="nm" placeholder="ชื่อ-นามสกุล" autocomplete="name">':''}
 <input id="em" type="email" inputmode="email" placeholder="อีเมล ${DOMAIN}" autocomplete="email">
@@ -83,7 +87,7 @@ async function home(){stopCam();
  const{data}=await sb.from('activity_logs').select('started_at').eq('user_id',user.id).gte('started_at',start.toISOString());
  const per={};(data||[]).forEach(r=>{const k=dkey(r.started_at);per[k]=(per[k]||0)+1});
  const c=(data||[]).length,days=[...Array(DAYS)].map((_,i)=>{const d=new Date(start);d.setDate(d.getDate()+i);return d});
- shell(`<h1>🧑🏻‍🩰 App stretch for Relax</h1>
+ shell(`<h1>🌿 App stretch for Relax</h1>
 <div class="card center"><h2>สวัสดี ${esc(profile?.full_name||'')} 💚</h2>
 <p class="hint" style="margin:0">เป้าหมาย: ทำให้ครบ ${GOAL} ครั้งใน ${DAYS} วัน</p>
 <div class="bar" style="margin:10px 0"><i style="width:${Math.min(100,c/GOAL*100)}%"></i></div><b>${c}/${GOAL} ครั้ง</b>
@@ -124,11 +128,25 @@ function activity(){shell(`<div class="card"><h2 class="center">🧘 กิจ�
 ${POSES.map((p,i)=>`<div class="ben"><b>ท่าที่ ${i+1} ${p[0]}</b>ประยุกต์จาก${p[1]}<br>ช่วยยืดกล้ามเนื้อ${p[2]}</div>`).join('')}
 <button onclick="startAct()">▶ เริ่มทำกิจกรรม</button></div>`,1)}
 const stopCam=()=>{clearInterval(tm);try{rec&&rec.state!='inactive'&&rec.stop()}catch(e){}stream?.getTracks().forEach(t=>t.stop());stream=rec=null};
-let tm,mir=true;
+let tm,mir=true,flt=0,paused=false;
+const FILTERS=[['ปกติ',''],['สดใส','brightness(1.08) contrast(1.08) saturate(1.35)'],['ผิวเนียน','brightness(1.12) contrast(.92) saturate(1.1) blur(.6px)'],['อบอุ่น','sepia(.25) saturate(1.3) brightness(1.06) hue-rotate(-8deg)'],['วินเทจ','sepia(.55) contrast(.95) brightness(1.04)'],['ขาวดำ','grayscale(1) contrast(1.1)']];
+function applyCam(){const v=$('#cam');if(!v)return;v.style.filter=FILTERS[flt][1];v.classList.toggle('mirror',mir)}
+function setFlt(k){flt=k;applyCam();document.querySelectorAll('.chip').forEach((c,j)=>c.classList.toggle('on',j==k))}
+const camTools=()=>`<div class="chips">${FILTERS.map((f,j)=>`<button class="chip ${j==flt?'on':''}" onclick="setFlt(${j})">${f[0]}</button>`).join('')}</div>
+<div class="row" style="margin-top:6px"><button class="alt sm" onclick="mir=!mir;applyCam()">↔ กลับด้านภาพ</button><button class="alt sm" onclick="beep()">🔔 ทดสอบเสียง</button></div>`;
+function togglePause(){paused=!paused;try{paused?rec.pause():rec.resume()}catch(e){}
+ const b=$('#pz');if(b)b.textContent=paused?'▶ ทำต่อ':'⏸ หยุดชั่วคราว'}
 async function startAct(){
  try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();AC.resume()}catch(e){}
  try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false})}
  catch(e){return alert('เปิดกล้องไม่ได้ กรุณาอนุญาตการใช้กล้องแล้วลองใหม่')}
+ shell(`<div class="card"><h2 class="center">ปรับกล้องให้พร้อม แล้วกดเริ่ม</h2>
+<p class="hint center">เลือกฟิลเตอร์และมุมกล้องได้ตามสบาย ระบบจะเริ่มบันทึกและจับเวลาเมื่อคุณกดปุ่มเริ่มเท่านั้น</p>
+<div class="pgrid"><div class="poseFig"><img src="img/p1.jpg" alt="ท่า${POSES[0][0]}"><p class="mut" style="margin:6px 0 0">ท่าแรก: ${POSES[0][0]}</p></div>
+<div><div class="camBox"><video id="cam" playsinline muted autoplay></video></div>${camTools()}</div></div>
+<button style="margin-top:14px" onclick="beginAct()">▶ เริ่มท่าที่ 1</button></div>`,1);
+ $('#cam').srcObject=stream;applyCam()}
+function beginAct(){
  const mt=['video/webm;codecs=vp8','video/webm','video/mp4'].find(t=>window.MediaRecorder&&MediaRecorder.isTypeSupported(t))||'';
  chunks=[];rec=new MediaRecorder(stream,mt?{mimeType:mt,videoBitsPerSecond:600000}:{});rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);rec.start(1000);
  step(0,Date.now(),rec.mimeType||mt||'video/webm')}
@@ -136,17 +154,17 @@ let AC=null;
 function beep(n=1,f=880){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();AC.resume();
  for(let k=0;k<n;k++){const o=AC.createOscillator(),g=AC.createGain(),s=AC.currentTime+k*.3;o.frequency.value=f;o.connect(g);g.connect(AC.destination);
  g.gain.setValueAtTime(.0001,s);g.gain.exponentialRampToValueAtTime(.4,s+.02);g.gain.exponentialRampToValueAtTime(.0001,s+.25);o.start(s);o.stop(s+.26)}}catch(e){}}
-function step(i,t0,mime){clearInterval(tm);
+function step(i,t0,mime){clearInterval(tm);if(paused){paused=false;try{rec.resume()}catch(e){}}
  if(i>=POSES.length)return finish(t0,mime);const p=POSES[i];let s=HOLD_SEC,ph='hold';const SIDES=i==2?['ค้างท่า (20 วินาที)']:['ข้างซ้าย','ข้างขวา'];let si=0;
  shell(`<div class="card"><div class="stepbar">${POSES.map((_,j)=>`<div class="${j<=i?'on':''}"></div>`).join('')}</div>
 <h2 id="pt">ท่าที่ ${i+1}/12: ${p[0]}</h2>
 <div class="pgrid"><div class="poseFig"><img id="pimg" src="img/p${i+1}.jpg" alt="ท่า${p[0]}"></div>
 <div><div class="camBox"><video id="cam" playsinline muted autoplay class="${mir?'mirror':''}"></video><div class="badge" id="bd">● กำลังบันทึก</div><div class="timer" id="cd">${s}</div><div class="phase" id="ph">${SIDES[0]}</div></div>
-<div class="row" style="margin-top:8px"><button class="alt sm" onclick="mir=!mir;$('#cam').classList.toggle('mirror',mir)">↔ กลับด้านภาพ</button><button class="alt sm" onclick="beep()">🔔 ทดสอบเสียง</button></div></div></div>
+${camTools()}</div></div>
 <div class="ben" style="margin-top:12px" id="inf"><b>💚 ประโยชน์</b>ประยุกต์จาก${p[1]} ช่วยยืดกล้ามเนื้อ${p[2]}</div>
-<button onclick="step(${i+1},${t0},'${mime}')">${i<11?'ข้ามไปท่าถัดไป ➜':'เสร็จสิ้น ✓'}</button></div>`);
- $('#cam').srcObject=stream;
- tm=setInterval(()=>{s--;
+<button class="alt" id="pz" onclick="togglePause()">⏸ หยุดชั่วคราว</button><button onclick="step(${i+1},${t0},'${mime}')">${i<11?'ข้ามไปท่าถัดไป ➜':'เสร็จสิ้น ✓'}</button></div>`);
+ $('#cam').srcObject=stream;applyCam();
+ tm=setInterval(()=>{if(paused)return;s--;
   if(s<=0){
    if(ph=='hold'&&si<SIDES.length-1){si++;s=HOLD_SEC;beep(2);$('#ph').textContent='สลับ → '+SIDES[si];$('#cd').textContent=s;return}
    if(ph=='hold'){beep(2);if(i>=POSES.length-1){clearInterval(tm);return finish(t0,mime)}
@@ -165,12 +183,32 @@ async function finish(t0,mime){clearInterval(tm);shell('<div class="card center"
  shell(`<div class="card center"><div style="font-size:70px">🎉</div><h2>ทำกิจกรรมเสร็จสิ้น</h2><p>ใช้เวลา ${Math.max(1,Math.round((Date.now()-t0)/60000))} นาที</p><p class="hint">อย่าลืมทำให้ครบ ${GOAL} ครั้งใน ${DAYS} วัน</p><button onclick="home()">กลับหน้าหลัก</button></div>`)}
 
 // ---------- Admin ----------
+let adm={users:[],logs:[],uid:'',q:''};
+const fmtDur=d=>Math.floor((d||0)/60)+' นาที '+((d||0)%60)+' วินาที';
 async function admin(){shell('<div class="card center">กำลังโหลด...</div>',1);
- const{data,error}=await sb.from('activity_logs').select('*,profiles(full_name,email)').not('video_path','is',null).order('started_at',{ascending:false}).limit(30);
- if(error)return shell(`<div class="card"><p class="err">${esc(error.message)}</p></div>`,1);
- const urls=await Promise.all(data.map(r=>sb.storage.from('videos').createSignedUrl(r.video_path,3600)));
- shell(`<div class="card"><h2>ตรวจสอบวิดีโอ (Admin)</h2>${data.map((r,i)=>`<div class="ben"><b>${esc(r.profiles?.full_name||'')} <span class="mut">${esc(r.profiles?.email||'')}</span></b><span class="mut">${new Date(r.started_at).toLocaleString('th-TH')} · ${Math.round(r.duration_sec/60)} นาที</span>
- <video class="rev" controls preload="none" playsinline src="${urls[i].data?.signedUrl||''}"></video></div>`).join('')||'<p>ยังไม่มีวิดีโอ</p>'}</div>`,1)}
+ const[u,l]=await Promise.all([sb.from('profiles').select('id,full_name,email,role').order('full_name'),
+  sb.from('activity_logs').select('id,user_id,started_at,duration_sec,video_path').order('started_at',{ascending:false}).limit(500)]);
+ if(u.error||l.error)return shell(`<div class="card"><p class="err">${esc((u.error||l.error).message)}</p><p class="mut">ตรวจสอบว่ารัน setup.sql แล้ว และบัญชีนี้ถูกตั้งเป็น admin</p></div>`,1);
+ adm={users:u.data,logs:l.data,uid:'',q:''};adminView()}
+function userList(){const per={};adm.logs.forEach(r=>{const o=per[r.user_id]||(per[r.user_id]={n:0,last:r.started_at});o.n++});
+ const q=adm.q.toLowerCase();
+ return adm.users.filter(x=>!q||(x.full_name||'').toLowerCase().includes(q)||(x.email||'').toLowerCase().includes(q)).map(x=>{const o=per[x.id];
+  return `<div class="day ${adm.uid==x.id?'today':''}"><b>${esc(x.full_name||'-')}<br><span class="mut">${esc(x.email||'')}</span></b><span class="slot ${o?'done':''}">${o?o.n+' ครั้ง · ล่าสุด '+new Date(o.last).toLocaleDateString('th-TH'):'ยังไม่เคยทำ'}</span><button class="sm" onclick="adm.uid='${x.id}';adminView()">ดูวิดีโอ</button></div>`}).join('')||'<p class="mut">ไม่พบผู้ใช้</p>'}
+function adminView(){
+ const nm=Object.fromEntries(adm.users.map(x=>[x.id,x])),today=adm.logs.filter(r=>dkey(r.started_at)==dkey(new Date())).length,
+  vids=adm.logs.filter(r=>r.video_path&&(!adm.uid||r.user_id==adm.uid));
+ shell(`<div class="card"><h2>ผู้ดูแลระบบ</h2>
+<div class="stat"><div><b>${adm.users.length}</b>ผู้ใช้</div><div><b>${adm.logs.length}</b>ครั้งทั้งหมด</div><div><b>${today}</b>วันนี้</div></div>
+<input placeholder="ค้นหาชื่อหรืออีเมล" oninput="adm.q=this.value;$('#ul').innerHTML=userList()"><div id="ul">${userList()}</div>
+<button class="alt sm" onclick="admin()">🔄 รีเฟรชข้อมูล</button></div>
+<div class="card"><h2>วิดีโอ ${adm.uid?esc(nm[adm.uid]?.full_name||''):'ทั้งหมด (ล่าสุด)'}</h2>${adm.uid?'<button class="alt sm" onclick="adm.uid=\'\';adminView()">แสดงทุกคน</button>':''}
+${vids.map(r=>`<div class="ben"><b>${esc(nm[r.user_id]?.full_name||'-')} <span class="mut">${esc(nm[r.user_id]?.email||'')}</span></b><span class="mut">${new Date(r.started_at).toLocaleString('th-TH')} · ${fmtDur(r.duration_sec)}</span>
+<div class="row"><button class="sm" onclick="playVid('${r.id}')">▶ เปิดวิดีโอ</button><button class="alt sm" onclick="dlVid('${r.id}')">⬇ ดาวน์โหลด</button></div><div id="v${r.id}"></div></div>`).join('')||'<p class="mut">ยังไม่มีวิดีโอ</p>'}</div>`,1)}
+async function signed(id,dl){const r=adm.logs.find(x=>String(x.id)==String(id));
+ const{data,error}=await sb.storage.from('videos').createSignedUrl(r.video_path,3600,dl?{download:true}:undefined);
+ if(error){alert('เปิดไฟล์ไม่ได้: '+error.message);return null}return data.signedUrl}
+async function playVid(id){const u=await signed(id);if(u)$('#v'+id).innerHTML=`<video class="rev" controls playsinline autoplay src="${u}"></video>`}
+async function dlVid(id){const u=await signed(id,true);if(u)location.href=u}
 
 sb.auth.onAuthStateChange(()=>{});boot();
 </script></body></html>
