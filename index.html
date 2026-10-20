@@ -173,7 +173,7 @@ function step(i,t0,mime){clearInterval(tm);if(paused){paused=false;try{rec.resum
 <div><div class="camBox"><video id="cam" playsinline muted autoplay class="${mir?'mirror':''}"></video><div class="badge" id="bd">● กำลังบันทึก</div><div class="timer" id="cd">${s}</div><div class="phase" id="ph">${SIDES[0]}</div></div></div></div>
 ${camTools()}
 <div class="ben" style="margin-top:12px" id="inf"><b>💚 ประโยชน์</b>ประยุกต์จาก${p[1]} ช่วยยืดกล้ามเนื้อ${p[2]}</div>
-<button class="alt" id="pz" onclick="togglePause()">⏸ หยุดชั่วคราว</button><button onclick="step(${i+1},${t0},'${mime}')">${i<11?'ข้ามไปท่าถัดไป ➜':'เสร็จสิ้น ✓'}</button></div>`);
+<button class="alt" id="pz" onclick="togglePause()">⏸ หยุดชั่วคราว</button></div>`);
  $('#cam').srcObject=stream;applyCam();
  tm=setInterval(()=>{if(paused)return;s--;
   if(s<=0){
